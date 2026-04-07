@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Salvador Ayon</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Exo+2:wght@200;300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#04050a;
+  --acc:#7ab3ff;
+  --acc2:#b8d4ff;
+  --txt:#c8d8f0;
+  --txt2:rgba(160,185,225,0.55);
+  --txt3:rgba(100,130,180,0.3);
+  --border:rgba(100,150,255,0.1);
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:'Exo 2',sans-serif;font-weight:300;overflow-x:hidden}
+nav{position:fixed;top:0;left:0;width:100%;z-index:200;padding:18px 52px;display:flex;align-items:center;justify-content:space-between;background:rgba(4,5,10,0.88);backdrop-filter:blur(20px);border-bottom:0.5px solid var(--border)}
+.logo{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;letter-spacing:5px;color:var(--txt)}
+.logo em{font-style:normal;color:var(--acc)}
+.nav-links{display:flex;gap:36px}
+.nav-links a{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:500;letter-spacing:2.5px;text-transform:uppercase;color:var(--txt2);text-decoration:none;transition:color 0.2s}
+.nav-links a:hover{color:var(--acc2)}
+#hero{position:relative;width:100%;height:100vh;min-height:700px;overflow:hidden;display:flex;align-items:center}
+.h-bg{position:absolute;inset:0;background:#04050a}
+.grain{position:absolute;inset:0;pointer-events:none;z-index:1;opacity:0.035;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:180px 180px}
+.scanline{position:absolute;inset:0;pointer-events:none;z-index:2;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.05) 3px,rgba(0,0,0,0.05) 4px)}
+#heroCanvas{position:absolute;inset:0;z-index:3;width:100%;height:100%}
+.ticker-wrap{position:absolute;z-index:5;pointer-events:none;overflow:hidden}
+.ticker-left{left:0;top:0;width:26px;height:100%;display:flex;flex-direction:column;border-right:0.5px solid rgba(100,150,255,0.06)}
+.ticker-right{right:0;top:0;width:26px;height:100%;display:flex;flex-direction:column;border-left:0.5px solid rgba(100,150,255,0.06)}
+.ticker-bottom{bottom:0;left:26px;right:26px;height:20px;border-top:0.5px solid rgba(100,150,255,0.06);display:flex;align-items:center;overflow:hidden}
+.ticker-top{top:66px;left:26px;right:26px;height:16px;border-bottom:0.5px solid rgba(100,150,255,0.04);display:flex;align-items:center;overflow:hidden}
+.t-txt{font-family:'Rajdhani',sans-serif;font-size:8px;letter-spacing:1.5px;color:rgba(120,160,255,0.18);white-space:nowrap;animation:sl 28s linear infinite}
+.t-txt-r{font-family:'Rajdhani',sans-serif;font-size:8px;letter-spacing:1.5px;color:rgba(120,160,255,0.13);white-space:nowrap;animation:sl 22s linear infinite reverse}
+.t-v{font-family:'Rajdhani',sans-serif;font-size:7px;letter-spacing:1px;color:rgba(120,160,255,0.15);writing-mode:vertical-rl;white-space:nowrap;animation:su 20s linear infinite;line-height:26px}
+.t-vr{font-family:'Rajdhani',sans-serif;font-size:7px;letter-spacing:1px;color:rgba(120,160,255,0.12);writing-mode:vertical-rl;white-space:nowrap;animation:su 26s linear infinite reverse;line-height:26px}
+@keyframes sl{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes su{from{transform:translateY(0)}to{transform:translateY(-50%)}}
+.panels-layer{position:absolute;inset:0;z-index:6;pointer-events:none;perspective:1000px;perspective-origin:50% 48%}
+.fp{position:absolute;background:rgba(6,9,22,0.72);border:0.5px solid rgba(100,150,255,0.16);backdrop-filter:blur(8px)}
+.fp::before{content:'';position:absolute;top:0;left:8%;right:8%;height:1px;background:linear-gradient(90deg,transparent,rgba(120,170,255,0.4),transparent)}
+.fp-data{padding:12px 14px;height:100%;display:flex;flex-direction:column;justify-content:space-between}
+.fp-lbl{font-family:'Rajdhani',sans-serif;font-size:9px;font-weight:500;letter-spacing:2.5px;text-transform:uppercase;color:rgba(120,160,255,0.4)}
+.fp-val{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:rgba(190,215,255,0.9);line-height:1.15}
+.fp-sub{font-size:9px;letter-spacing:1px;color:rgba(100,140,210,0.42)}
+.fp-bar{height:1.5px;background:rgba(100,150,255,0.1);margin-top:5px}
+.fp-fill{height:100%;background:linear-gradient(90deg,rgba(80,120,220,0.5),rgba(160,200,255,0.85))}
+.fp1{width:240px;height:142px;top:14%;left:55%;transform:rotateY(-22deg) rotateX(-3deg) translateZ(50px);animation:fl1 8s ease-in-out infinite}
+.fp2{width:185px;height:115px;top:60%;left:58%;transform:rotateY(-26deg) rotateX(5deg) translateZ(15px);animation:fl2 10s ease-in-out infinite}
+.fp3{width:175px;height:105px;top:20%;left:78%;transform:rotateY(-30deg) rotateX(-5deg) translateZ(35px);animation:fl3 9s ease-in-out infinite}
+.fp4{width:150px;height:88px;top:64%;left:80%;transform:rotateY(-32deg) rotateX(4deg) translateZ(8px);animation:fl1 12s ease-in-out infinite reverse}
+.fp5{width:110px;height:70px;top:6%;left:70%;transform:rotateY(-18deg) rotateX(-7deg) translateZ(70px);animation:fl2 7s ease-in-out infinite}
+@keyframes fl1{0%,100%{transform:rotateY(-22deg) rotateX(-3deg) translateZ(50px) translateY(0)}50%{transform:rotateY(-22deg) rotateX(-3deg) translateZ(50px) translateY(-16px)}}
+@keyframes fl2{0%,100%{transform:rotateY(-26deg) rotateX(5deg) translateZ(15px) translateY(0)}50%{transform:rotateY(-26deg) rotateX(5deg) translateZ(15px) translateY(-12px)}}
+@keyframes fl3{0%,100%{transform:rotateY(-30deg) rotateX(-5deg) translateZ(35px) translateY(0)}50%{transform:rotateY(-30deg) rotateX(-5deg) translateZ(35px) translateY(-20px)}}
+.hero-text{position:relative;z-index:7;max-width:500px;margin-left:7%;padding:0 24px}
+.h-tag{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:500;letter-spacing:4px;text-transform:uppercase;color:var(--acc);display:flex;align-items:center;gap:10px;margin-bottom:18px;opacity:0;animation:fdin 0.8s 0.2s forwards}
+.h-tag::before{content:'';display:block;width:26px;height:1px;background:var(--acc)}
+h1.h-name{font-family:'Rajdhani',sans-serif;font-size:clamp(52px,7vw,88px);font-weight:700;line-height:0.88;letter-spacing:-2px;color:#fff;text-shadow:0 0 60px rgba(100,150,255,0.18);margin-bottom:12px;opacity:0;animation:fdin 0.9s 0.35s forwards}
+h1.h-name em{font-style:normal;color:transparent;-webkit-text-stroke:1.5px rgba(120,170,255,0.5)}
+.h-role{font-family:'Exo 2',sans-serif;font-size:13px;font-weight:200;letter-spacing:4px;text-transform:uppercase;color:var(--txt2);margin-bottom:20px;opacity:0;animation:fdin 0.9s 0.5s forwards}
+.h-desc{font-size:14px;line-height:1.85;color:rgba(160,185,225,0.48);max-width:400px;margin-bottom:36px;opacity:0;animation:fdin 0.9s 0.65s forwards}
+.h-btns{display:flex;gap:12px;opacity:0;animation:fdin 0.9s 0.85s forwards}
+.bp{font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;padding:13px 28px;background:var(--acc);color:#03040a;border:none;cursor:pointer;text-decoration:none;display:inline-block;clip-path:polygon(9px 0%,100% 0%,calc(100% - 9px) 100%,0% 100%);transition:all 0.2s}
+.bp:hover{background:var(--acc2);box-shadow:0 0 28px rgba(120,170,255,0.3)}
+.bg-btn{font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:500;letter-spacing:2.5px;text-transform:uppercase;padding:12px 26px;background:transparent;color:var(--acc2);border:0.5px solid rgba(120,170,255,0.3);cursor:pointer;text-decoration:none;display:inline-block;clip-path:polygon(9px 0%,100% 0%,calc(100% - 9px) 100%,0% 100%);transition:all 0.2s}
+.bg-btn:hover{background:rgba(100,150,255,0.07);border-color:var(--acc)}
+@keyframes fdin{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.sec{position:relative;padding:110px 0;overflow:hidden}
+.sec-alt{background:rgba(5,7,16,0.6)}
+.cont{max-width:1100px;margin:0 auto;padding:0 52px}
+.sl{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:500;letter-spacing:4px;text-transform:uppercase;color:var(--acc);display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.sl::before{content:'';display:block;width:22px;height:1px;background:var(--acc)}
+.st{font-family:'Rajdhani',sans-serif;font-size:clamp(28px,3.5vw,42px);font-weight:700;color:#fff;letter-spacing:-0.5px;margin-bottom:52px}
+.vdiv{border:none;border-top:0.5px solid rgba(100,150,255,0.07)}
+.ag{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start}
+.ap{font-size:14px;line-height:1.9;color:var(--txt2);margin-bottom:16px}
+.ap strong{color:var(--acc2);font-weight:400}
+.srow{display:flex;gap:1px;margin-top:36px;border:0.5px solid rgba(100,150,255,0.1);overflow:hidden}
+.sc{flex:1;padding:20px 14px;background:rgba(6,8,20,0.9);text-align:center}
+.sn{font-family:'Rajdhani',sans-serif;font-size:32px;font-weight:700;color:var(--acc);line-height:1}
+.sk-lbl{font-family:'Rajdhani',sans-serif;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--txt3);margin-bottom:8px;margin-top:24px}
+.sk-wrap{display:flex;flex-wrap:wrap;gap:7px}
+.sk{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;padding:5px 12px;background:rgba(80,120,220,0.07);border:0.5px solid rgba(100,150,255,0.14);color:rgba(140,180,240,0.58);clip-path:polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%);transition:all 0.2s;cursor:default}
+.sk:hover{background:rgba(100,150,255,0.11);border-color:rgba(140,180,255,0.32);color:var(--acc2)}
+.pg{display:grid;grid-template-columns:repeat(2,1fr);gap:2px}
+.pj{background:rgba(5,7,18,0.92);border:0.5px solid rgba(100,150,255,0.09);padding:34px 30px;position:relative;overflow:hidden;transition:all 0.3s;cursor:pointer}
+.pj::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(120,170,255,0.38),transparent);opacity:0;transition:opacity 0.3s}
+.pj:hover{background:rgba(8,12,28,0.98);border-color:rgba(120,170,255,0.22);transform:translateY(-3px)}
+.pj:hover::before{opacity:1}
+.pj.feat{grid-column:span 2;display:grid;grid-template-columns:3fr 2fr;gap:44px;align-items:center}
+.pn{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:500;letter-spacing:3px;color:var(--txt3);text-transform:uppercase;margin-bottom:13px}
+.pt{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:#fff;margin-bottom:9px}
+.pd{font-size:13px;line-height:1.8;color:rgba(140,170,220,0.48);margin-bottom:20px}
+.ps{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:22px}
+.stk{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;padding:3px 9px;background:rgba(80,120,220,0.09);border:0.5px solid rgba(100,150,255,0.16);color:var(--acc)}
+.pl{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--acc2);text-decoration:none;display:flex;align-items:center;gap:7px;transition:all 0.2s}
+.pl:hover{color:#fff;gap:14px}.pl::after{content:'→'}
+.pviz{height:190px;background:rgba(4,6,16,0.82);border:0.5px solid rgba(100,150,255,0.09);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.pviz-bg{position:absolute;inset:0;background:radial-gradient(ellipse 50% 50% at 50% 50%,rgba(30,60,140,0.1) 0%,transparent 70%)}
+.pviz-t{font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;color:rgba(100,150,255,0.1);letter-spacing:5px;position:relative;z-index:1}
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start}
+.ci h3{font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;color:#fff;margin-bottom:12px}
+.ci p{font-size:14px;line-height:1.85;color:var(--txt2);margin-bottom:28px}
+.cl{display:flex;align-items:center;gap:11px;padding:13px 16px;background:rgba(5,7,18,0.92);border:0.5px solid rgba(100,150,255,0.09);color:var(--txt2);text-decoration:none;font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:500;letter-spacing:2px;text-transform:uppercase;transition:all 0.2s;margin-bottom:9px}
+.cl:hover{color:var(--acc2);border-color:rgba(120,170,255,0.28);background:rgba(50,90,180,0.07)}
+.cl-i{width:28px;height:28px;background:rgba(50,90,180,0.1);border:0.5px solid rgba(100,150,255,0.16);display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-size:9px;font-weight:700;color:var(--acc)}
+.cf{display:flex;flex-direction:column;gap:13px}
+.fl-lbl{font-family:'Rajdhani',sans-serif;font-size:9px;font-weight:500;letter-spacing:3px;text-transform:uppercase;color:var(--txt3);display:block;margin-bottom:5px}
+.fi,.ft{width:100%;background:rgba(5,7,18,0.92);border:0.5px solid rgba(100,150,255,0.14);color:var(--txt);font-family:'Exo 2',sans-serif;font-size:13px;font-weight:300;padding:10px 13px;outline:none;transition:border-color 0.2s}
+.fi:focus,.ft:focus{border-color:rgba(120,170,255,0.38);background:rgba(8,12,28,0.82)}
+.fi::placeholder,.ft::placeholder{color:rgba(50,80,140,0.38)}
+.ft{height:100px;resize:none}
+footer{position:relative;z-index:2;padding:26px 52px;border-top:0.5px solid rgba(100,150,255,0.06);display:flex;align-items:center;justify-content:space-between;background:rgba(3,4,10,0.98)}
+.fl2,.fr{font-family:'Rajdhani',sans-serif;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--txt3)}
+.dl{display:inline-block;width:5px;height:5px;border-radius:50%;background:#4af;box-shadow:0 0 7px rgba(80,170,255,0.65);margin-right:7px;animation:blnk 2s ease-in-out infinite}
+@keyframes blnk{0%,100%{opacity:1}50%{opacity:0.3}}
+.fu{opacity:0;transform:translateY(26px);transition:all 0.7s cubic-bezier(0.16,1,0.3,1)}
+.fu.vis{opacity:1;transform:none}
+@media(max-width:800px){
+  nav{padding:15px 20px}.nav-links{display:none}
+  .cont{padding:0 20px}.ag,.cg{grid-template-columns:1fr;gap:44px}
+  .pg{grid-template-columns:1fr}.pj.feat{grid-column:span 1;grid-template-columns:1fr}
+  .pviz,.panels-layer{display:none}.hero-text{margin-left:0;padding:0 20px}
+  footer{flex-direction:column;gap:6px;text-align:center}
+}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">SALVADOR<em>·</em>AYON</div>
+  <div class="nav-links">
+    <a href="#hero">Home</a><a href="#about">About</a>
+    <a href="#projects">Projects</a><a href="#contact">Contact</a>
+  </div>
+</nav>
+
+<section id="hero">
+  <div class="h-bg"></div>
+  <div class="grain"></div>
+  <div class="scanline"></div>
+  <canvas id="heroCanvas"></canvas>
+  <div class="ticker-wrap ticker-left"><div class="t-v" id="tv1"></div></div>
+  <div class="ticker-wrap ticker-right"><div class="t-vr" id="tv2"></div></div>
+  <div class="ticker-wrap ticker-bottom"><div class="t-txt" id="tb1"></div></div>
+  <div class="ticker-wrap ticker-top"><div class="t-txt-r" id="tb2"></div></div>
+  <div class="panels-layer">
+    <div class="fp fp1"><div class="fp-data">
+      <div class="fp-lbl">Focus</div>
+      <div><div class="fp-val">Data</div><div class="fp-sub">Analytics · Science</div></div>
+      <div><div class="fp-bar"><div class="fp-fill" style="width:85%"></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:3px">
+        <div style="font-family:'Rajdhani',sans-serif;font-size:8px;letter-spacing:1px;color:rgba(100,150,255,0.28)">PROFICIENCY</div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:8px;letter-spacing:1px;color:rgba(100,150,255,0.28)">85%</div>
+      </div></div>
+    </div></div>
+    <div class="fp fp2"><div class="fp-data">
+      <div class="fp-lbl">Stack</div>
+      <div class="fp-val" style="font-size:14px;color:rgba(160,200,255,0.72)">Python · SQL · R</div>
+      <div style="display:flex;gap:4px;margin-top:4px">
+        <div style="width:5px;height:5px;border-radius:50%;background:rgba(100,170,255,0.75)"></div>
+        <div style="width:5px;height:5px;border-radius:50%;background:rgba(100,170,255,0.75)"></div>
+        <div style="width:5px;height:5px;border-radius:50%;background:rgba(100,170,255,0.75)"></div>
+        <div style="width:5px;height:5px;border-radius:50%;background:rgba(100,170,255,0.18)"></div>
+      </div>
+    </div></div>
+    <div class="fp fp3"><div class="fp-data">
+      <div class="fp-lbl">Tools</div>
+      <div class="fp-val" style="font-size:13px;line-height:1.4">Pandas · NumPy<br/>Tableau · BigQuery</div>
+    </div></div>
+    <div class="fp fp4"><div class="fp-data">
+      <div class="fp-lbl">Status</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
+        <span class="dl"></span>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:11px;color:rgba(140,200,255,0.72);letter-spacing:1px">Available</div>
+      </div>
+    </div></div>
+    <div class="fp fp5"><div class="fp-data" style="justify-content:center;align-items:center;text-align:center">
+      <div class="fp-lbl">Certified</div>
+      <div class="fp-val" style="font-size:11px">Google DA</div>
+    </div></div>
+  </div>
+  <div class="hero-text">
+    <div class="h-tag">Portfolio · 2025</div>
+    <h1 class="h-name">SALVADOR<br/><em>AYON</em></h1>
+    <div class="h-role">Data Analyst · CS Student · Chicago</div>
+    <p class="h-desc">CS student with a Data Science minor. I turn messy datasets into clear decisions — Python, SQL, R, and whatever the problem needs.</p>
+    <div class="h-btns">
+      <a href="#projects" class="bp">See my work</a>
+      <a href="#contact" class="bg-btn">Get in touch</a>
+    </div>
+  </div>
+</section>
+
+<hr class="vdiv"/>
+<section class="sec sec-alt" id="about">
+  <div class="cont">
+    <div class="sl fu">01 — About</div>
+    <div class="st fu">Background</div>
+    <div class="ag">
+      <div class="fu">
+        <p class="ap">CS student at <strong>Loyola University Chicago</strong> with a Data Science minor. I work across the full analytics pipeline — cleaning raw data, writing queries, building visualizations, and documenting findings that actually make sense.</p>
+        <p class="ap">Completed the <strong>Google Data Analytics Professional Certificate</strong>. Hands-on experience with Python, R, SQL, Pandas, NumPy, Tableau, and BigQuery.</p>
+        <p class="ap">Looking for <strong>data analyst / data science internship</strong> roles where analytical thinking meets real business problems.</p>
+        <div class="srow">
+          <div class="sc"><div class="sn">3+</div><div style="font-size:9px;letter-spacing:1.5px;color:var(--txt3);text-transform:uppercase;margin-top:5px">Years</div></div>
+          <div class="sc"><div class="sn">SQL</div><div style="font-size:9px;letter-spacing:1.5px;color:var(--txt3);text-transform:uppercase;margin-top:5px">PostgreSQL</div></div>
+          <div class="sc"><div class="sn">DA</div><div style="font-size:9px;letter-spacing:1.5px;color:var(--txt3);text-transform:uppercase;margin-top:5px">Google Cert</div></div>
+        </div>
+      </div>
+      <div class="fu">
+        <div class="sk-lbl">Languages</div>
+        <div class="sk-wrap"><span class="sk">Python</span><span class="sk">SQL</span><span class="sk">R</span></div>
+        <div class="sk-lbl">Libraries & Tools</div>
+        <div class="sk-wrap"><span class="sk">Pandas</span><span class="sk">NumPy</span><span class="sk">Tableau</span><span class="sk">BigQuery</span><span class="sk">RStudio</span><span class="sk">Spyder</span></div>
+        <div class="sk-lbl">Analytics</div>
+        <div class="sk-wrap"><span class="sk">EDA</span><span class="sk">Data Cleaning</span><span class="sk">Visualization</span><span class="sk">ETL</span><span class="sk">Schema Design</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+<hr class="vdiv"/>
+<section class="sec" id="projects">
+  <div class="cont">
+    <div class="sl fu">02 — Projects</div>
+    <div class="st fu">Selected Work</div>
+    <div class="pg">
+      <div class="pj feat fu">
+        <div>
+          <div class="pn">Featured · 001</div>
+          <h3 class="pt">Exploratory Data Analysis Pipeline</h3>
+          <p class="pd">End-to-end EDA workflow — cleaned and transformed structured datasets using Python and R, performed summary statistics and visualizations to surface patterns, and produced reproducible analysis scripts with documented findings.</p>
+          <div class="ps"><span class="stk">Python</span><span class="stk">Pandas</span><span class="stk">NumPy</span><span class="stk">R</span></div>
+          <a href="#" class="pl">View Project</a>
+        </div>
+        <div class="pviz"><div class="pviz-bg"></div><div class="pviz-t">EDA</div></div>
+      </div>
+      <div class="pj fu">
+        <div class="pn">002</div>
+        <h3 class="pt">SQL Analytics Dashboard</h3>
+        <p class="pd">Built complex SQL queries using JOIN, GROUP BY, and HAVING to extract business insights from relational databases. Designed normalized schemas for structured storage.</p>
+        <div class="ps"><span class="stk">PostgreSQL</span><span class="stk">BigQuery</span><span class="stk">SQL</span></div>
+        <a href="#" class="pl">View Project</a>
+      </div>
+      <div class="pj fu">
+        <div class="pn">003</div>
+        <h3 class="pt">Data Processing Automation</h3>
+        <p class="pd">Developed Python scripts to automate data processing and CSV transformation workflows. Reduced manual prep time and made pipelines reproducible across datasets.</p>
+        <div class="ps"><span class="stk">Python</span><span class="stk">Pandas</span><span class="stk">Tableau</span></div>
+        <a href="#" class="pl">View Source</a>
+      </div>
+    </div>
+  </div>
+</section>
+<hr class="vdiv"/>
+<section class="sec sec-alt" id="contact">
+  <div class="cont">
+    <div class="sl fu">03 — Contact</div>
+    <div class="st fu">Get In Touch</div>
+    <div class="cg">
+      <div class="fu">
+        <div class="ci"><h3>Let's connect.</h3><p>Open to data analyst and data science internship opportunities. Feel free to reach out.</p></div>
+        <a href="mailto:sayon@luc.edu" class="cl"><div class="cl-i">@</div>sayon@luc.edu</a>
+        <a href="https://github.com" class="cl"><div class="cl-i" style="font-family:'Rajdhani';font-size:9px;font-weight:700">GH</div>github.com/salvadorayon</a>
+        <a href="https://linkedin.com" class="cl"><div class="cl-i" style="font-family:'Rajdhani';font-size:9px;font-weight:700">LI</div>linkedin.com/in/salvadorayon</a>
+      </div>
+      <div class="cf fu">
+        <div><label class="fl-lbl">Name</label><input type="text" class="fi" placeholder="Your name"/></div>
+        <div><label class="fl-lbl">Email</label><input type="email" class="fi" placeholder="you@email.com"/></div>
+        <div><label class="fl-lbl">Message</label><textarea class="ft" placeholder="What's on your mind?"></textarea></div>
+        <button class="bp" style="border:none;align-self:flex-start"><span class="dl"></span>Send it</button>
+      </div>
+    </div>
+  </div>
+</section>
+<footer>
+  <div class="fl2"><span class="dl"></span>Open to internships · Chicago</div>
+  <div class="fr">Salvador Ayon · Portfolio · 2025</div>
+</footer>
+
+<script>
+const JP='データ　アナリスト　システム　クエリ　統計　分析　クラウド　エンジニア　アルゴリズム　';
+const EN='SALVADOR · DATA · ANALYTICS · SQL · PYTHON · R · PANDAS · TABLEAU · BIGQUERY · EDA · CHICAGO · ';
+const MIX=JP+EN+JP+EN;
+document.getElementById('tv1').textContent=MIX+MIX;
+document.getElementById('tv2').textContent=MIX+MIX;
+document.getElementById('tb1').textContent=(JP+EN).repeat(4);
+document.getElementById('tb2').textContent=(EN+JP).repeat(4);
+
+const cv=document.getElementById('heroCanvas');
+const ctx=cv.getContext('2d');
+function resize(){cv.width=cv.offsetWidth;cv.height=cv.offsetHeight}
+resize();window.addEventListener('resize',resize);
+
+// ── STARS ──
+const stars=Array.from({length:320},()=>({
+  x:Math.random(),y:Math.random(),
+  r:Math.random()*1.3,
+  a:0.15+Math.random()*0.75,
+  tw:Math.random()*Math.PI*2,
+  spd:0.005+Math.random()*0.015
+}));
+
+// ── EARTH: city lights as clusters of points + night-side ──
+// We'll store city light clusters (lon/lat-ish mapped to sphere)
+// and rotate them slowly
+const CITY_CLUSTERS = [
+  // [lon degrees, lat degrees, intensity, count]
+  // East Asia
+  {lon:121,lat:31,i:1.0,n:55},  // Shanghai
+  {lon:139,lat:36,i:1.0,n:60},  // Tokyo-Osaka corridor
+  {lon:126,lat:37,i:0.8,n:35},  // Seoul
+  {lon:116,lat:40,i:0.9,n:40},  // Beijing
+  {lon:114,lat:22,i:0.85,n:30}, // Shenzhen/HK
+  {lon:103,lat:1, i:0.75,n:22}, // Singapore
+  // South Asia
+  {lon:77, lat:19,i:0.85,n:45}, // India west coast
+  {lon:88, lat:23,i:0.8,n:35},  // Kolkata
+  {lon:80, lat:13,i:0.7,n:25},  // Chennai/Bangalore
+  // Middle East
+  {lon:55, lat:25,i:0.9,n:30},  // UAE
+  {lon:45, lat:24,i:0.7,n:20},  // Saudi
+  // Europe
+  {lon:2,  lat:49,i:0.95,n:55}, // Paris-London belt
+  {lon:13, lat:52,i:0.85,n:40}, // Berlin-Warsaw
+  {lon:12, lat:45,i:0.8,n:35},  // Italy
+  {lon:-4, lat:41,i:0.7,n:28},  // Iberia
+  // Africa coast
+  {lon:3,  lat:6, i:0.6,n:18},  // Lagos
+  {lon:32, lat:-26,i:0.65,n:22},// Johannesburg
+  // Americas
+  {lon:-74,lat:41,i:1.0,n:60},  // NYC corridor
+  {lon:-87,lat:42,i:0.9,n:45},  // Chicago-Detroit
+  {lon:-118,lat:34,i:0.95,n:50},// LA
+  {lon:-99,lat:20,i:0.8,n:35},  // Mexico City
+  {lon:-46,lat:-23,i:0.85,n:40},// São Paulo
+  {lon:-43,lat:-23,i:0.75,n:28},// Rio
+];
+
+// Pre-generate light points for each cluster
+const cityLights=[];
+CITY_CLUSTERS.forEach(c=>{
+  for(let i=0;i<c.n;i++){
+    const dlon=(Math.random()-0.5)*12;
+    const dlat=(Math.random()-0.5)*8;
+    const brightness=c.i*(0.4+Math.random()*0.6);
+    cityLights.push({
+      lon:(c.lon+dlon)*Math.PI/180,
+      lat:(c.lat+dlat)*Math.PI/180,
+      b:brightness,
+      r:Math.random()*1.4+0.3,
+    });
+  }
+});
+
+// Earth rotation state
+let earthRot=0;
+const EARTH_TILT=23.5*Math.PI/180; // axial tilt
+
+// Moon orbit
+let moonAngle=0;
+
+// ── FIGHTERS ──
+function spawnFighter(){
+  // 3D position: x,y,z normalized -1..1, z=depth
+  const side=Math.floor(Math.random()*4);
+  let x,y,z;
+  z=-0.5+Math.random()*1.0; // depth
+  if(side===0){x=-1.4;y=-0.8+Math.random()*1.6}
+  else if(side===1){x=1.4;y=-0.8+Math.random()*1.6}
+  else if(side===2){y=-1.2;x=-1.2+Math.random()*2.4}
+  else{y=1.2;x=-1.2+Math.random()*2.4}
+  // target: cross to opposite side roughly
+  const tx=-x*(0.8+Math.random()*0.4);
+  const ty=-y*(0.5+Math.random()*0.8);
+  const tz=z+(-0.5+Math.random()*1.0);
+  const dist=Math.sqrt((tx-x)**2+(ty-y)**2+(tz-z)**2);
+  const spd=(0.0006+Math.random()*0.0004)/dist;
+  return{x,y,z,tx,ty,tz,vx:(tx-x)*spd,vy:(ty-y)*spd,vz:(tz-z)*spd,
+    alpha:0.35+Math.random()*0.55,done:false};
+}
+const fighters=Array.from({length:2},spawnFighter);
+
+// perspective project
+function project(x,y,z,W,H){
+  const fov=1.8;
+  const pz=z+fov;
+  if(pz<=0.01)return null;
+  const sx=W/2+x/pz*(W*0.5);
+  const sy=H/2+y/pz*(H*0.5);
+  const scale=1/pz;
+  return{sx,sy,scale};
+}
+
+// ── COMET TRAILS ──
+const trails=[
+  {x:0.05,y:0.52,tx:0.65,ty:0.36,color:'rgba(0,255,160,',  alpha:0.62,speed:0.0011,prog:0,   w:1.3},
+  {x:0.94,y:0.65,tx:0.35,ty:0.44,color:'rgba(255,80,160,', alpha:0.58,speed:0.0009,prog:0.32,w:1.0},
+  {x:0.45,y:0.9, tx:0.55,ty:0.32,color:'rgba(80,160,255,', alpha:0.62,speed:0.001, prog:0.6, w:1.1},
+  {x:0.88,y:0.12,tx:0.40,ty:0.52,color:'rgba(200,120,255,',alpha:0.52,speed:0.0008,prog:0.18,w:0.9},
+  {x:0.02,y:0.2, tx:0.72,ty:0.68,color:'rgba(255,200,80,', alpha:0.42,speed:0.0007,prog:0.5, w:0.8},
+];
+
+// ── DRAW EARTH ──
+function drawEarth(W,H,rot){
+  // Earth center: right-center, large, partially cropped
+  const ex=W*0.72, ey=H*0.52;
+  const er=Math.min(W,H)*0.38; // big radius
+
+  ctx.save();
+  ctx.translate(ex,ey);
+  // axial tilt
+  ctx.rotate(EARTH_TILT);
+
+  // clip to circle
+  ctx.beginPath();ctx.arc(0,0,er,0,Math.PI*2);ctx.clip();
+
+  // deep ocean base — very dark
+  ctx.beginPath();ctx.arc(0,0,er,0,Math.PI*2);
+  const ocean=ctx.createRadialGradient(-er*0.15,-er*0.1,0,0,0,er);
+  ocean.addColorStop(0,'rgba(8,18,50,1)');
+  ocean.addColorStop(0.5,'rgba(5,12,35,1)');
+  ocean.addColorStop(1,'rgba(2,5,18,1)');
+  ctx.fillStyle=ocean;ctx.fill();
+
+  // continent silhouettes (very subtle dark masses)
+  // We approximate land as darker regions painted as blobs
+  const continents=[
+    // [x_frac, y_frac, rx, ry, rot_offset, darkness]
+    {x:-0.05,y:-0.15,rx:0.28,ry:0.20,rot:-0.3,d:0.08}, // Eurasia
+    {x:-0.1, y:0.28, rx:0.18,ry:0.22,rot:0.2, d:0.07}, // Africa
+    {x:-0.55,y:-0.05,rx:0.22,ry:0.28,rot:-0.15,d:0.06},// Americas
+    {x:0.35, y:0.35, rx:0.12,ry:0.08,rot:0.4, d:0.05}, // Australia
+    {x:0.0,  y:-0.55,rx:0.20,ry:0.10,rot:0.0, d:0.06}, // Arctic/N pole shadow
+  ];
+  continents.forEach(c=>{
+    const cx=c.x*er+Math.cos(rot)*c.x*er*0.3;
+    const shifted_x=cx;
+    ctx.save();
+    ctx.translate(shifted_x,c.y*er);
+    ctx.rotate(c.rot+rot*0.4);
+    ctx.scale(1,0.7);
+    ctx.beginPath();
+    ctx.ellipse(0,0,c.rx*er,c.ry*er,0,0,Math.PI*2);
+    ctx.fillStyle=`rgba(4,18,8,${c.d})`;
+    ctx.fill();
+    ctx.restore();
+  });
+
+  // CITY LIGHTS — iterate and project each point onto sphere surface
+  cityLights.forEach(pt=>{
+    // rotate longitude by earth rotation
+    const lon=pt.lon+rot;
+    // 3D sphere point
+    const cosLat=Math.cos(pt.lat);
+    const px3=cosLat*Math.sin(lon);
+    const py3=-Math.sin(pt.lat);
+    const pz3=cosLat*Math.cos(lon);
+    // only draw if facing us (pz3 > -0.1 for edge glow)
+    if(pz3<-0.05)return;
+    // terminator: light only on night side (we define night as left half roughly)
+    // Actually show lights everywhere but brighter on dark side
+    const sunDot=pz3; // simplified: z=facing sun
+    const nightFactor=Math.max(0, 0.5+sunDot*-1.2); // bright when facing away
+    if(nightFactor<0.02)return;
+    const lx=px3*er;
+    const ly=py3*er;
+    // color: warm yellow-white for cities
+    const r2=ctx.createRadialGradient(lx,ly,0,lx,ly,pt.r*2.2);
+    const a=pt.b*nightFactor*0.9;
+    r2.addColorStop(0,`rgba(255,245,190,${a*2.5})`);
+    r2.addColorStop(0.5,`rgba(255,210,110,${a*1.2})`);
+    r2.addColorStop(1,`rgba(255,180,60,0)`);
+    ctx.beginPath();ctx.arc(lx,ly,pt.r*3.5,0,Math.PI*2);
+    ctx.fillStyle=r2;ctx.fill();
+  });
+
+  // night-side darkness overlay (simulate terminator line)
+  // Gradient: left side = lit edge (very faint blue atmosphere), right = pure dark
+  const term=ctx.createLinearGradient(-er,0,er*0.6,0);
+  term.addColorStop(0,'rgba(0,0,0,0)');
+  term.addColorStop(0.52,'rgba(0,0,0,0)');
+  term.addColorStop(0.62,'rgba(0,5,20,0.35)');
+  term.addColorStop(0.78,'rgba(0,2,10,0.6)');
+  term.addColorStop(1,'rgba(0,0,5,0.82)');
+  ctx.fillStyle=term;
+  ctx.fillRect(-er,-er,er*2,er*2);
+
+  ctx.restore();
+
+  // atmosphere glow (outside clip)
+  ctx.save();ctx.translate(ex,ey);ctx.rotate(EARTH_TILT);
+  const atm=ctx.createRadialGradient(0,0,er*0.92,0,0,er*1.12);
+  atm.addColorStop(0,'rgba(60,120,255,0)');
+  atm.addColorStop(0.4,'rgba(60,120,255,0.09)');
+  atm.addColorStop(0.7,'rgba(40,90,200,0.06)');
+  atm.addColorStop(1,'rgba(20,50,150,0)');
+  ctx.beginPath();ctx.arc(0,0,er*1.12,0,Math.PI*2);
+  ctx.fillStyle=atm;ctx.fill();
+  // thin bright limb on lit side
+  ctx.beginPath();
+  ctx.arc(0,0,er,Math.PI*0.65,Math.PI*1.35);
+  ctx.lineWidth=er*0.018;
+  ctx.strokeStyle='rgba(80,160,255,0.25)';
+  ctx.stroke();
+  ctx.restore();
+}
+
+// ── DRAW MOON ──
+function drawMoon(W,H,earthRot,moonAngle){
+  const ex=W*0.72, ey=H*0.52;
+  const er=Math.min(W,H)*0.38;
+  const orbitR=er*1.55;
+  // moon orbits around earth center
+  const mx=ex+Math.cos(moonAngle)*orbitR*1.1;
+  const my=ey+Math.sin(moonAngle)*orbitR*0.35; // flatten orbit ellipse
+  const mr=er*0.055; // tiny moon
+
+  // moon body
+  const mg=ctx.createRadialGradient(mx-mr*0.3,my-mr*0.3,0,mx,my,mr);
+  mg.addColorStop(0,'rgba(210,210,220,0.9)');
+  mg.addColorStop(0.5,'rgba(160,165,175,0.85)');
+  mg.addColorStop(1,'rgba(80,85,100,0.8)');
+  ctx.beginPath();ctx.arc(mx,my,mr,0,Math.PI*2);
+  ctx.fillStyle=mg;ctx.fill();
+  // faint glow
+  const mgl=ctx.createRadialGradient(mx,my,mr*0.8,mx,my,mr*2);
+  mgl.addColorStop(0,'rgba(180,200,255,0.08)');
+  mgl.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.beginPath();ctx.arc(mx,my,mr*2,0,Math.PI*2);
+  ctx.fillStyle=mgl;ctx.fill();
+}
+
+// ── DRAW FIGHTER ──
+function drawFighter(f,W,H){
+  const p=project(f.x,f.y,f.z,W,H);
+  if(!p)return;
+  const {sx,sy,scale}=p;
+  const sz=Math.max(6,Math.min(36,scale*55)); // size by depth
+  const alpha=f.alpha*Math.min(1,scale*2.2);
+
+  // direction vector in screen space
+  const p2=project(f.x+f.vx*80,f.y+f.vy*80,f.z+f.vz*80,W,H);
+  const angle=p2?Math.atan2(p2.sy-sy,p2.sx-sx):0;
+
+  ctx.save();
+  ctx.translate(sx,sy);ctx.rotate(angle);
+  ctx.globalAlpha=alpha;
+
+  ctx.strokeStyle=`rgba(180,215,255,0.9)`;
+  ctx.fillStyle=`rgba(12,28,70,0.75)`;
+  ctx.lineWidth=0.7;
+
+  // body
+  ctx.beginPath();
+  ctx.moveTo(sz,0);
+  ctx.lineTo(-sz*0.65,-sz*0.22);
+  ctx.lineTo(-sz*0.42,0);
+  ctx.lineTo(-sz*0.65,sz*0.22);
+  ctx.closePath();
+  ctx.fill();ctx.stroke();
+
+  // left wing
+  ctx.beginPath();
+  ctx.moveTo(sz*0.08,-sz*0.22);
+  ctx.lineTo(-sz*0.5,-sz*0.8);
+  ctx.lineTo(-sz*0.65,-sz*0.22);
+  ctx.closePath();
+  ctx.fill();ctx.stroke();
+
+  // right wing
+  ctx.beginPath();
+  ctx.moveTo(sz*0.08,sz*0.22);
+  ctx.lineTo(-sz*0.5,sz*0.8);
+  ctx.lineTo(-sz*0.65,sz*0.22);
+  ctx.closePath();
+  ctx.fill();ctx.stroke();
+
+  // engine glow
+  const eg=ctx.createRadialGradient(-sz*0.65,0,0,-sz*0.65,0,sz*0.35);
+  eg.addColorStop(0,'rgba(120,200,255,0.85)');
+  eg.addColorStop(1,'rgba(0,80,200,0)');
+  ctx.beginPath();ctx.arc(-sz*0.65,0,sz*0.35,0,Math.PI*2);
+  ctx.fillStyle=eg;ctx.fill();
+
+  ctx.restore();
+  ctx.globalAlpha=1;
+}
+
+// ── DRAW TRAIL ──
+function drawTrail(t,W,H){
+  t.prog+=t.speed;
+  if(t.prog>1.1)t.prog=0;
+  const p=Math.min(t.prog,1);
+  const x0=t.x*W,y0=t.y*H,x1=t.tx*W,y1=t.ty*H;
+  const cx=(x0+x1)/2+(y1-y0)*0.25;
+  const cy=(y0+y1)/2-(x1-x0)*0.25;
+  ctx.beginPath();
+  for(let i=0;i<=80*p;i++){
+    const tt=i/80;
+    const bx=(1-tt)*(1-tt)*x0+2*(1-tt)*tt*cx+tt*tt*x1;
+    const by=(1-tt)*(1-tt)*y0+2*(1-tt)*tt*cy+tt*tt*y1;
+    i===0?ctx.moveTo(bx,by):ctx.lineTo(bx,by);
+  }
+  ctx.strokeStyle=`${t.color}${t.alpha*0.35})`;ctx.lineWidth=t.w;ctx.stroke();
+  const hx=(1-p)*(1-p)*x0+2*(1-p)*p*cx+p*p*x1;
+  const hy=(1-p)*(1-p)*y0+2*(1-p)*p*cy+p*p*y1;
+  ctx.beginPath();ctx.arc(hx,hy,3,0,Math.PI*2);
+  ctx.fillStyle=`${t.color}${t.alpha})`;ctx.fill();
+  const g=ctx.createRadialGradient(hx,hy,0,hx,hy,12);
+  g.addColorStop(0,`${t.color}${t.alpha*0.5})`);g.addColorStop(1,`${t.color}0)`);
+  ctx.beginPath();ctx.arc(hx,hy,12,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();
+}
+
+function draw(){
+  const W=cv.width,H=cv.height;
+  ctx.clearRect(0,0,W,H);
+
+  // stars
+  stars.forEach(s=>{
+    s.tw+=s.spd*0.02;
+    const a=s.a*(0.55+0.45*Math.sin(s.tw));
+    ctx.beginPath();ctx.arc(s.x*W,s.y*H,s.r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(200,220,255,${a})`;ctx.fill();
+  });
+
+  // update rotation
+  earthRot+=0.00008; // very slow
+  moonAngle+=0.0003;
+
+  // draw moon behind earth if on that side
+  const moonBehind=Math.sin(moonAngle)<0;
+  if(moonBehind) drawMoon(W,H,earthRot,moonAngle);
+  drawEarth(W,H,earthRot);
+  if(!moonBehind) drawMoon(W,H,earthRot,moonAngle);
+
+  // fighters
+  fighters.forEach((f,i)=>{
+    f.x+=f.vx;f.y+=f.vy;f.z+=f.vz;
+    // check if out of bounds
+    const p=project(f.x,f.y,f.z,W,H);
+    const oob=!p||p.sx<-120||p.sx>W+120||p.sy<-120||p.sy>H+120||f.z>2||f.z<-1.5;
+    if(oob) fighters[i]=spawnFighter();
+    else drawFighter(f,W,H);
+  });
+
+  // comet trails
+  trails.forEach(t=>drawTrail(t,W,H));
+
+  requestAnimationFrame(draw);
+}
+requestAnimationFrame(draw);
+
+const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('vis')})},{threshold:0.1});
+document.querySelectorAll('.fu').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>
